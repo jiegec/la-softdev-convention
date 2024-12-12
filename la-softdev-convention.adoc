@@ -1,9 +1,11 @@
 = Software Development and Build Convention for LoongArch Architectures
-Version 0.1
-Copyright © Loongson Technology 2023. All rights reserved.
+Version 0.2
+Copyright © Loongson Technology 2024. All rights reserved.
+:title-page:
 :doctype: article
 :toc: left
 :sectnums:
+
 
 == Abstract
 
@@ -17,6 +19,8 @@ LoongArch chip features, Software development, Compiler constraints, Kernel cons
 
 - **0.1**
     * initial version.
+- **0.2**
+    * added content related to vector compilation.
 
 == Introduction
 
@@ -110,7 +114,7 @@ link:https://github.com/loongson/LoongArch-Documentation/blob/main/docs/LoongArc
 | `\\__loongarch__`         | `1`                                           | Target architecture is LoongArch                                                                                                                                                          
 | `__loongarch_grlen`        | `64` `32`                                     | Bit-width of GPR                                                                                                                                                                          
 | `__loongarch_frlen`        | `0` `32` `64`                                 | Bit-width of FPR (`0` if no FPU)                                                                                                                                                          
-| `__loongarch_arch`         | `"loongarch64"` `"la464"`                     | Target CPU name specified by `-march`. If not specified, defaults to the compiler-defined default. If `-march=native` is specified, then it is automatically detected by the compiler
+| `__loongarch_arch`         | `"loongarch64"` `"la464"` `"la64v1.0"` `"la64v1.1"`  | Target CPU name specified by `-march`. If not specified, defaults to the compiler-defined default. If `-march=native` is specified, then it is automatically detected by the compiler
 | `__loongarch_tune`         | `"loongarch64"` `"la464"`                     | Target CPU name specified by `-mtune`. If not specified, it defaults to the same as `__loongarch_arch`. If `-mtune=native` is specified, then it is automatically detected by the compiler
 | `__loongarch_lp64`         | Undefined or  `1`                             | ABI uses 64-bit GPR for parameter passing and follows LP64 data model                                                                                                                     
 | `__loongarch_hard_float`   | Undefined or `1`                              | ABI uses FPR for parameter passing                                                                                                                                                        
@@ -119,14 +123,17 @@ link:https://github.com/loongson/LoongArch-Documentation/blob/main/docs/LoongArc
 | `__loongarch_double_float` | Undefined or  `1`                             | ABI uses 64-bit FPR for parameter passing                                                                                                                                                 
 |========================================================================================================================================================================================================================================================================
 
-=== Debian Multiarch Identifiers (Convention Target Triplet)
+=== LoongArch Multiarch Identifiers (Convention Target Triplet)
 
 [options="header"]
 |======================================================================
 | ABI Type        | C Library | Kernel      | Multiarch Identifier     
 | lp64d / base    | glibc     | Linux       | loongarch64-linux-gnu    
 | lp64f / base    | glibc     | Linux       | loongarch64-linux-gnuf32 
-| lp64s / base    | glibc     | Linux       | loongarch64-linux-gnusf  
+| lp64s / base    | glibc     | Linux       | loongarch64-linux-gnusf
+| lp64d / base    | musl libc | Linux       | loongarch64-linux-musl
+| lp64f / base    | musl libc | Linux       | loongarch64-linux-muslf32
+| lp64s / base    | musl libc | Linux       | loongarch64-linux-muslsf
 |======================================================================
 
 == Kernel Constraints
@@ -199,15 +206,21 @@ For embedded operating systems, the kernel needs to be built with the -mstrict-a
 
 === Desktop and Server Operating System Build Requirements
 
-Desktop operating systems need to support CPU platforms with at least 128-bit vector units.
+Desktop and server operating operating systems both need to support CPU platforms with at least 128-bit vector units.
 
-The desktop operating system compilation toolchain should enable the -mno-strict-align compilation option by default and disable auto-vectorization.
+To support 128-bit vector instructions, the compilation toolchain should use the -march=la64v1.0 compilation option when compiling desktop and server operating systems.
+
+When the toolchain does not support the -march=la64v1.0 compilation option, the compilation toolchain should use -march=loongarch64 as the default compilation option to compile desktop or server operating systems. The compilation toolchain does not support vector instructions when the -march=loongarch64 option is used.
+
+The desktop and server operating system compilation toolchain should enable -mno-strict-align compilation option.
 
 === Embedded Operating System Requirements
 
 Embedded operating systems need to support CPU platforms without vector units.
 
-The embedded operating system compilation toolchain should enable the -mstrict-align compilation option by default and disable auto-vectorization.
+Developers should use the -march=loongarch64 compilation option when compiling a 64-bit embedded operating system.
+
+The embedded operating system compilation toolchain should enable the -mstrict-align compilation option by default.
 
 
 == Compatibility Requirements for Software Development

@@ -34,3 +34,7 @@ or send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
 - **v0.1**
 
     * Initial version
+
+- **0.2**
+
+    * added content related to vector compilation.
